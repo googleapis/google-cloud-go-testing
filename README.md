@@ -7,5 +7,3 @@ If you plan to use this code for mocks, we recommend you read [Don't Overuse
 Mocks](https://testing.googleblog.com/2013/05/testing-on-toilet-dont-overuse-mocks.html) first.
 
 **NOTE:** This code has alpha status. It may be subject to backwards-incompatible changes.
-
-## News
