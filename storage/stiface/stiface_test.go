@@ -24,56 +24,9 @@ import (
 	"golang.org/x/net/context"
 
 	"cloud.google.com/go/storage"
-	"google.golang.org/api/iterator"
-	"google.golang.org/api/option"
 )
 
-func TestIntegration_Public(t *testing.T) {
-	if testing.Short() {
-		t.Skip("integration tests skipped in short mode")
-	}
-	// Confirm that an unauthenticated client can access a public bucket.
-	// See https://cloud.google.com/storage/docs/public-datasets/landsat
-	const landsatBucket = "gcp-public-data-landsat"
-	const landsatPrefix = "LC08/PRE/044/034/LC80440342016259LGN00/"
-	const landsatObject = landsatPrefix + "LC80440342016259LGN00_MTL.txt"
-
-	// Create an unauthenticated client.
-	ctx := context.Background()
-	c, err := storage.NewClient(ctx, option.WithoutAuthentication())
-	if err != nil {
-		t.Fatal(err)
-	}
-	client := AdaptClient(c)
-	defer client.Close()
-	bkt := client.Bucket(landsatBucket)
-	obj := bkt.Object(landsatObject)
-
-	// Read a public object.
-	bytes := readObject(t, obj)
-	if got, want := len(bytes), 7903; got != want {
-		t.Errorf("len(bytes) = %d, want %d", got, want)
-	}
-
-	// List objects in a public bucket.
-	iter := bkt.Objects(ctx, &storage.Query{Prefix: landsatPrefix})
-	gotCount := 0
-	for {
-		_, err := iter.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			t.Fatal(err)
-		}
-		gotCount++
-	}
-	if wantCount := 13; gotCount != wantCount {
-		t.Errorf("object count: got %d, want %d", gotCount, wantCount)
-	}
-}
-
-func TestIntegration_Private(t *testing.T) {
+func TestIntegration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("integration tests skipped in short mode")
 	}
