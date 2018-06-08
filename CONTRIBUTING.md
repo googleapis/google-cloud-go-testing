@@ -26,3 +26,10 @@ information on using pull requests.
 
 This project follows [Google's Open Source Community
 Guidelines](https://opensource.google.com/conduct/).
+
+## Testing
+
+### storage/stiface
+
+Before running the tests, set the STIFACE_BUCKET environment variable to the
+name of a bucket you have read/write access to.
