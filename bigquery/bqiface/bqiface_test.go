@@ -44,29 +44,34 @@ func TestIntegration(t *testing.T) {
 	defer client.Close()
 
 	ds := client.Dataset(fmt.Sprintf("bqiface_%d", time.Now().Unix()))
-	var md DatasetMetadata
-	md.DefaultTableExpiration = time.Hour
+	var wantMD DatasetMetadata
+	wantMD.DefaultTableExpiration = time.Hour
 	var ae AccessEntry
 	ae.Role = bigquery.OwnerRole
 	ae.EntityType = bigquery.SpecialGroupEntity
 	ae.Entity = "projectOwners"
-	md.Access = []*AccessEntry{&ae}
-	err = ds.Create(ctx, &md)
+	wantMD.Access = []*AccessEntry{&ae}
+	err = ds.Create(ctx, &wantMD)
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer func() {
+		if err := ds.Delete(ctx); err != nil {
+			t.Fatal(err)
+		}
+	}()
 
-	md2, err := ds.Metadata(ctx)
+	gotMD, err := ds.Metadata(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got, want := md2.DefaultTableExpiration, md.DefaultTableExpiration; got != want {
+	if got, want := gotMD.DefaultTableExpiration, wantMD.DefaultTableExpiration; got != want {
 		t.Errorf("DefaultTableExpiration: got %s, want %s", got, want)
 	}
-	if got, want := len(md2.Access), 1; got != want {
+	if got, want := len(gotMD.Access), 1; got != want {
 		t.Fatalf("got %d access entries, want %d", got, want)
 	}
-	if got, want := *md2.Access[0], ae; got != want {
+	if got, want := *gotMD.Access[0], ae; got != want {
 		t.Errorf("got %+v, want %+v", got, want)
 	}
 
@@ -78,6 +83,12 @@ func TestIntegration(t *testing.T) {
 	if err := table.Create(ctx, &bigquery.TableMetadata{Schema: schema}); err != nil {
 		t.Fatal(err)
 	}
+	defer func() {
+		if err := table.Delete(ctx); err != nil {
+			t.Fatal(err)
+		}
+	}()
+
 	upl := table.Uploader()
 	var saverRows []*bigquery.ValuesSaver
 
@@ -92,35 +103,35 @@ func TestIntegration(t *testing.T) {
 		t.Fatal(putError(err))
 	}
 	count := 0
-loop:
 	for {
 		it := table.Read(ctx)
-		for {
-			var v []bigquery.Value
-			err := it.Next(&v)
-			if err == iterator.Done {
-				if count == 0 {
-					// Wait for rows to appear; it may take a few seconds.
-					time.Sleep(1 * time.Second)
-					continue loop
-				}
-				break loop
-			}
-			if err != nil {
-				t.Fatal(err)
-			}
-			count++
+		count, err = countRows(it)
+		if err != nil {
+			t.Fatal(err)
 		}
+		if count > 0 {
+			break
+		}
+		// Wait for rows to appear; it may take a few seconds.
+		time.Sleep(1 * time.Second)
 	}
 	if got, want := count, len(saverRows); got != want {
 		t.Errorf("got %d rows, want %d", got, want)
 	}
+}
 
-	if err := table.Delete(ctx); err != nil {
-		t.Fatal(err)
-	}
-	if err := ds.Delete(ctx); err != nil {
-		t.Fatal(err)
+func countRows(it RowIterator) (int, error) {
+	n := 0
+	for {
+		var v []bigquery.Value
+		err := it.Next(&v)
+		if err == iterator.Done {
+			return n, nil
+		}
+		if err != nil {
+			return 0, err
+		}
+		n++
 	}
 }
 
