@@ -118,6 +118,19 @@ func TestIntegration(t *testing.T) {
 	if got, want := count, len(saverRows); got != want {
 		t.Errorf("got %d rows, want %d", got, want)
 	}
+
+	q := client.Query(fmt.Sprintf("SELECT * FROM %s.%s", table.DatasetID(), table.TableID()))
+	it, err := q.Read(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	count, err = countRows(it)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := count, len(saverRows); got != want {
+		t.Errorf("got %d rows, want %d", got, want)
+	}
 }
 
 func countRows(it RowIterator) (int, error) {
