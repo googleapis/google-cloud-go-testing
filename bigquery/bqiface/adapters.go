@@ -58,6 +58,7 @@ func (c client) SetLocation(s string)                 { c.Client.Location = s }
 func (c client) Close() error                         { return c.Client.Close() }
 func (c client) Dataset(id string) Dataset            { return dataset{c.Client.Dataset(id)} }
 func (c client) Jobs(ctx context.Context) JobIterator { return jobIterator{c.Client.Jobs(ctx)} }
+func (c client) Query(s string) Query                 { return query{c.Client.Query(s)} }
 
 func (c client) DatasetInProject(p, d string) Dataset {
 	return dataset{c.Client.DatasetInProject(p, d)}
@@ -174,6 +175,22 @@ func (l loader) SetLoadConfig(c LoadConfig) {
 
 func (l loader) Run(ctx context.Context) (Job, error) {
 	return adaptJob(l.Loader.Run(ctx))
+}
+
+func (q query) JobIDConfig() *bigquery.JobIDConfig   { return &q.Query.JobIDConfig }
+func (q query) Run(ctx context.Context) (Job, error) { return adaptJob(q.Query.Run(ctx)) }
+
+func (q query) Read(ctx context.Context) (RowIterator, error) {
+	r, err := q.Query.Read(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return rowIterator{r}, nil
+}
+
+func (q query) SetQueryConfig(c QueryConfig) {
+	q.Query.QueryConfig = c.QueryConfig
+	q.Query.QueryConfig.Dst = c.Dst.(table).Table
 }
 
 func (r rowIterator) SetStartIndex(i uint64)     { r.RowIterator.StartIndex = i }

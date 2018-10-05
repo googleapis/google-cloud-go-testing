@@ -44,6 +44,7 @@ type Client interface {
 	DatasetInProject(string, string) Dataset
 	Datasets(context.Context) DatasetIterator
 	DatasetsInProject(context.Context, string) DatasetIterator
+	Query(string) Query
 	JobFromID(context.Context, string) (Job, error)
 	JobFromIDLocation(context.Context, string, string) (Job, error)
 	Jobs(context.Context) JobIterator
@@ -124,7 +125,7 @@ type JobIterator interface {
 
 type Query interface {
 	JobIDConfig() *bigquery.JobIDConfig
-	SetqueryConfig(QueryConfig)
+	SetQueryConfig(QueryConfig)
 	Run(context.Context) (Job, error)
 	Read(context.Context) (RowIterator, error)
 
