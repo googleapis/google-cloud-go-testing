@@ -190,7 +190,9 @@ func (q query) Read(ctx context.Context) (RowIterator, error) {
 
 func (q query) SetQueryConfig(c QueryConfig) {
 	q.Query.QueryConfig = c.QueryConfig
-	q.Query.QueryConfig.Dst = c.Dst.(table).Table
+	if c.Dst != nil {
+		q.Query.QueryConfig.Dst = c.Dst.(table).Table
+	}
 }
 
 func (r rowIterator) SetStartIndex(i uint64)     { r.RowIterator.StartIndex = i }
