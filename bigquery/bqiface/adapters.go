@@ -15,8 +15,9 @@
 package bqiface
 
 import (
+	"context"
+
 	"cloud.google.com/go/bigquery"
-	"golang.org/x/net/context"
 )
 
 func AdaptClient(c *bigquery.Client) Client {

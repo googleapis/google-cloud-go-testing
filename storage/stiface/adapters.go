@@ -15,8 +15,9 @@
 package stiface
 
 import (
+	"context"
+
 	"cloud.google.com/go/storage"
-	"golang.org/x/net/context"
 )
 
 // AdaptClient adapts a storage.Client so that it satisfies the Client

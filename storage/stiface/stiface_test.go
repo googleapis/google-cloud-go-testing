@@ -16,12 +16,11 @@ package stiface
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"testing"
-
-	"golang.org/x/net/context"
 
 	"cloud.google.com/go/storage"
 )

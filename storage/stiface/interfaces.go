@@ -31,11 +31,11 @@
 package stiface
 
 import (
+	"context"
 	"io"
 
 	"cloud.google.com/go/iam"
 	"cloud.google.com/go/storage"
-	"golang.org/x/net/context"
 	"google.golang.org/api/iterator"
 )
 

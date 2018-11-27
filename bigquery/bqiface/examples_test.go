@@ -15,9 +15,11 @@
 package bqiface_test
 
 import (
+	"context"
+
 	"cloud.google.com/go/bigquery"
+	"github.com/GoogleCloudPlatform/google-cloud-go-testing/bigquery/bqiface"
 	"github.com/googleapis/google-cloud-go-testing/bigquery/bqiface"
-	"golang.org/x/net/context"
 )
 
 func Example_AdaptClient() {
