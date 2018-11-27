@@ -1,5 +1,9 @@
 # Testing Support for the Google Cloud Client Libraries for Go
 
+```
+go get github.com/googleapis/google-cloud-go-testing
+```
+
 This repository contains code that can help you test against the [Cloud Client
 Libraries for Go](https://github.com/GoogleCloudPlatform/google-cloud-go).
 
