@@ -2,7 +2,6 @@ module github.com/googleapis/google-cloud-go-testing
 
 require (
 	cloud.google.com/go v0.33.1
-	github.com/GoogleCloudPlatform/google-cloud-go-testing v0.0.0-20181009214230-c774a015af41
 	github.com/google/martian v2.1.0+incompatible // indirect
 	github.com/googleapis/gax-go v2.0.2+incompatible // indirect
 	go.opencensus.io v0.18.0 // indirect

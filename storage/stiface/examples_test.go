@@ -16,7 +16,7 @@ package stiface_test
 
 import (
 	"cloud.google.com/go/storage"
-	"github.com/GoogleCloudPlatform/google-cloud-go-testing/storage/stiface"
+	"github.com/googleapis/google-cloud-go-testing/storage/stiface"
 	"golang.org/x/net/context"
 )
 
