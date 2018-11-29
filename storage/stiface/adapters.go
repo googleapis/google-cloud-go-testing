@@ -19,7 +19,8 @@ import (
 	"golang.org/x/net/context"
 )
 
-// AdaptClient adapts a storage.Client so that it satisifes the Client interface.
+// AdaptClient adapts a storage.Client so that it satisfies the Client
+// interface.
 func AdaptClient(c *storage.Client) Client {
 	return client{c}
 }
