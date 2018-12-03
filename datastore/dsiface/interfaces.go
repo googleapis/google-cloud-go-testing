@@ -12,22 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package dsiface provides a set of interfaces for the types in cloud.google.com/go/datastore
-// These can be used to create mocks or other test doubles.
-// The package also provides adapters to enable the types of the datastore package to
-// implement these interfaces.
-//
-// We do not recommend using mocks for most testing. Please read
-// https://testing.googleblog.com/2013/05/testing-on-toilet-dont-overuse-mocks.html.
-//
-// You must embed these interfaces to implement them:
-//
-//    type ClientMock struct {
-//        dsiface.Client
-//        ...
-//    }
-//
-// This ensures that your implementations will not break when methods are added to the interfaces.
 package dsiface
 
 import (
