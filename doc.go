@@ -25,4 +25,3 @@ Note: These packages are in alpha. Some backwards-incompatible changes may
 occur.
 */
 package googlecloudgotesting
-
