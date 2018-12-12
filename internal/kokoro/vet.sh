@@ -26,3 +26,11 @@ try3 go get -u \
 git ls-files "*[^.pb].go" | xargs grep -L "\(Copyright [0-9]\{4,\}\)" 2>&1 | tee /dev/stderr | (! read)
 gofmt -s -d -l . 2>&1 | tee /dev/stderr | (! read)
 goimports -l . 2>&1 | tee /dev/stderr | (! read)
+
+golint ./... 2>&1 | ( \
+    grep -v "should have comment or be unexported" | \
+    grep -v "doc.go:17:1: package comment should be of the form" || true) | tee /dev/stderr | (! read)
+
+staticcheck -ignore '
+*:SA1019
+' ./...
