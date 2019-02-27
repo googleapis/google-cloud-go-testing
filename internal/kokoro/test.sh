@@ -15,7 +15,7 @@ go version
 
 # Set $GOPATH
 export GOPATH="$HOME/go"
-export GCGT_HOME=$GOPATH/src/googleapis/google-cloud-go-testing
+export GCGT_HOME=$GOPATH/src/github.com/googleapis/google-cloud-go-testing
 export PATH="$GOPATH/bin:$PATH"
 mkdir -p $GCGT_HOME
 
@@ -24,8 +24,20 @@ git clone . $GCGT_HOME
 cd $GCGT_HOME
 
 try3() { eval "$*" || eval "$*" || eval "$*"; }
-try3 go get -v -t ./...
 
+download_deps() {
+    if [[ `go version` == *"go1.11"* ]] || [[ `go version` == *"go1.12"* ]]; then
+        export GO111MODULE=on
+        # All packages, including +build tools, are fetched.
+        try3 go mod download
+    else
+        # Because we don't provide -tags tools, the +build tools
+        # dependencies aren't fetched.
+        try3 go get -v -t ./...
+    fi
+}
+
+download_deps
 ./internal/kokoro/vet.sh
 
 # Run tests and tee output to log file, to be pushed to GCS as artifact.
