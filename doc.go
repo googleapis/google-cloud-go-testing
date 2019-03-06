@@ -23,5 +23,19 @@ https://testing.googleblog.com/2013/05/testing-on-toilet-dont-overuse-mocks.html
 
 Note: These packages are in alpha. Some backwards-incompatible changes may
 occur.
+
+
+Embedding Interfaces
+
+All interfaces in this package include an embedToIncludeNewMethods method. This
+is intentionally unexported so that any implementor of the interface must
+embed the interface in their implementation. Embedding the interface in an
+implementation has the effect that any future methods added to the interface
+will not cause compile-time errors (the implementation does not implement
+the newly-added method), since embedded interfaces provide a default method for
+unimplemented methods.
+
+See Example (RecordBuckets) for an example of how to implement interfaces
+(including embedding the interface).
 */
 package googlecloudgotesting
