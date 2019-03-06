@@ -36,8 +36,8 @@ func (rc *RecordingClient) Bucket(name string) stiface.BucketHandle {
 // the embedded type will be used.
 
 func Example_recordBuckets() {
-	// This example demonstrates building a simple mock that the number of
-	// Bucket calls before calling the real client and returning its output.
+	// This example demonstrates building a simple mock that counts the number
+	// of Bucket calls before calling the real client and returning its output.
 
 	ctx := context.Background()
 	c, err := storage.NewClient(ctx)
