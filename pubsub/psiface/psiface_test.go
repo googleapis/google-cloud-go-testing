@@ -55,7 +55,7 @@ func basicTests(t *testing.T, topicName string, subscriptionName string, client 
 	ctx := context.Background()
 	topic := client.Topic(topicName)
 
-	sub, err := client.CreateSubscription(ctx, subscriptionName, topicName)
+	sub, err := client.CreateSubscription(ctx, subscriptionName, SubscriptionConfig{Topic: topic})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -101,7 +101,8 @@ func parseTopic(topicID string) (project, topic string, err error) {
 	return segs[1], segs[3], nil
 }
 
-// This test demonstrates how to use this package to create a simple fake for the pubsub client.
+// This test demonstrates how to use this package to create a simple fake for
+// the pubsub client.
 func TestFake(t *testing.T) {
 	ctx := context.Background()
 	client := newFakeClient()
@@ -138,18 +139,18 @@ func (c *fakeClient) Topic(id string) Topic {
 	return t.(Topic)
 }
 
-func (c *fakeClient) CreateSubscription(ctx context.Context, id string, topicID string) (Subscription, error) {
+func (c *fakeClient) CreateSubscription(ctx context.Context, id string, cfg SubscriptionConfig) (Subscription, error) {
 	if _, ok := c.subs.Load(id); ok {
 		return nil, fmt.Errorf("subscription %q already exists", id)
 	}
 	s := &fakeSubscription{
 		c:       c,
 		name:    id,
-		topicID: topicID,
+		topicID: cfg.Topic.String(),
 		msgs:    make(chan *pubsub.Message, 50),
 	}
 	c.subs.Store(id, s)
-	t := c.Topic(topicID).(*fakeTopic)
+	t := cfg.Topic.(*fakeTopic)
 	t.subs = append(t.subs, s)
 	return s, nil
 }

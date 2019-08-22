@@ -50,10 +50,8 @@ func (c client) Topic(id string) Topic {
 	return topic{c.Client.Topic(id)}
 }
 
-func (c client) CreateSubscription(ctx context.Context, id string, topicID string) (Subscription, error) {
-	s, err := c.Client.CreateSubscription(ctx, id, pubsub.SubscriptionConfig{
-		Topic: c.Client.Topic(topicID),
-	})
+func (c client) CreateSubscription(ctx context.Context, id string, cfg SubscriptionConfig) (Subscription, error) {
+	s, err := c.Client.CreateSubscription(ctx, id, cfg.toPS())
 	if err != nil {
 		return nil, err
 	}
@@ -86,4 +84,15 @@ func (s subscription) Delete(ctx context.Context) error {
 
 func (r publishResult) Get(ctx context.Context) (serverID string, err error) {
 	return r.PublishResult.Get(ctx)
+}
+
+func (cfg SubscriptionConfig) toPS() pubsub.SubscriptionConfig {
+	return pubsub.SubscriptionConfig{
+		Topic:               cfg.Topic.(topic).Topic,
+		PushConfig:          cfg.PushConfig,
+		AckDeadline:         cfg.AckDeadline,
+		RetainAckedMessages: cfg.RetainAckedMessages,
+		RetentionDuration:   cfg.RetentionDuration,
+		Labels:              cfg.Labels,
+	}
 }

@@ -29,6 +29,12 @@ Guidelines](https://opensource.google.com/conduct/).
 
 ## Testing
 
+### storage/psiface
+
+Before running the tests, set the PSIFACE_TOPIC environment variable to the
+name of a topic for which you have publish permissions and the ability to
+create, consume and delete subscriptions.
+
 ### storage/stiface
 
 Before running the tests, set the STIFACE_BUCKET environment variable to the

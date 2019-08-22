@@ -23,7 +23,7 @@ import (
 type Client interface {
 	CreateTopic(ctx context.Context, topicID string) (Topic, error)
 	Topic(id string) Topic
-	CreateSubscription(ctx context.Context, id string, topicID string) (Subscription, error)
+	CreateSubscription(ctx context.Context, id string, cfg SubscriptionConfig) (Subscription, error)
 	Subscription(id string) Subscription
 
 	embedToIncludeNewMethods()
