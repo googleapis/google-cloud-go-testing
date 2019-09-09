@@ -16,8 +16,7 @@ package psiface
 
 import (
 	"context"
-
-	"cloud.google.com/go/pubsub"
+	"time"
 )
 
 type Client interface {
@@ -31,15 +30,26 @@ type Client interface {
 
 type Topic interface {
 	String() string
-	Publish(ctx context.Context, msg *pubsub.Message) PublishResult
+	Publish(ctx context.Context, msg Message) PublishResult
 
 	embedToIncludeNewMethods()
 }
 
 type Subscription interface {
 	Exists(ctx context.Context) (bool, error)
-	Receive(ctx context.Context, f func(context.Context, *pubsub.Message)) error
+	Receive(ctx context.Context, f func(context.Context, Message)) error
 	Delete(ctx context.Context) error
+
+	embedToIncludeNewMethods()
+}
+
+type Message interface {
+	ID() string
+	Data() []byte
+	Attributes() map[string]string
+	PublishTime() time.Time
+	Ack()
+	Nack()
 
 	embedToIncludeNewMethods()
 }

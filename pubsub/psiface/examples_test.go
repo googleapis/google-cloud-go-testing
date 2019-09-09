@@ -21,14 +21,14 @@ import (
 	"github.com/googleapis/google-cloud-go-testing/pubsub/psiface"
 )
 
-func Example_AdaptClient() {
+func ExampleAdaptClient() {
 	ctx := context.Background()
 	c, err := pubsub.NewClient(ctx, "")
 	if err != nil {
 		// TODO: Handle error.
 	}
 	client := psiface.AdaptClient(c)
-	msg := &pubsub.Message{}
+	msg := psiface.AdaptMessage(&pubsub.Message{})
 	_, err = client.Topic("my-topic").Publish(ctx, msg).Get(ctx)
 	if err != nil {
 		// TODO: Handle error.

@@ -16,6 +16,7 @@ package psiface
 
 import (
 	"context"
+	"time"
 
 	"cloud.google.com/go/pubsub"
 )
@@ -26,16 +27,24 @@ func AdaptClient(c *pubsub.Client) Client {
 	return client{c}
 }
 
+// AdaptMessage adapts a pubsub.Message so that it satisfies the Message
+// interface.
+func AdaptMessage(msg *pubsub.Message) Message {
+	return message{msg}
+}
+
 type (
 	client        struct{ *pubsub.Client }
 	topic         struct{ *pubsub.Topic }
 	subscription  struct{ *pubsub.Subscription }
+	message       struct{ *pubsub.Message }
 	publishResult struct{ *pubsub.PublishResult }
 )
 
 func (client) embedToIncludeNewMethods()        {}
 func (topic) embedToIncludeNewMethods()         {}
 func (subscription) embedToIncludeNewMethods()  {}
+func (message) embedToIncludeNewMethods()       {}
 func (publishResult) embedToIncludeNewMethods() {}
 
 func (c client) CreateTopic(ctx context.Context, topicID string) (Topic, error) {
@@ -66,20 +75,38 @@ func (t topic) String() string {
 	return t.Topic.String()
 }
 
-func (t topic) Publish(ctx context.Context, msg *pubsub.Message) PublishResult {
-	return publishResult{t.Topic.Publish(ctx, msg)}
+func (t topic) Publish(ctx context.Context, msg Message) PublishResult {
+	return publishResult{t.Topic.Publish(ctx, msg.(message).Message)}
 }
 
 func (s subscription) Exists(ctx context.Context) (bool, error) {
 	return s.Subscription.Exists(ctx)
 }
 
-func (s subscription) Receive(ctx context.Context, f func(context.Context, *pubsub.Message)) error {
-	return s.Subscription.Receive(ctx, f)
+func (s subscription) Receive(ctx context.Context, f func(ctx context.Context, msg Message)) error {
+	return s.Subscription.Receive(ctx, func(ctx context.Context, msg *pubsub.Message) {
+		f(ctx, AdaptMessage(msg))
+	})
 }
 
 func (s subscription) Delete(ctx context.Context) error {
 	return s.Subscription.Delete(ctx)
+}
+
+func (m message) ID() string {
+	return m.Message.ID
+}
+
+func (m message) Data() []byte {
+	return m.Message.Data
+}
+
+func (m message) Attributes() map[string]string {
+	return m.Message.Attributes
+}
+
+func (m message) PublishTime() time.Time {
+	return m.Message.PublishTime
 }
 
 func (r publishResult) Get(ctx context.Context) (serverID string, err error) {

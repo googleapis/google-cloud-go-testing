@@ -32,6 +32,8 @@ func TestIntegration(t *testing.T) {
 		t.Skip("integration tests skipped in short mode")
 	}
 
+	msg := AdaptMessage(&pubsub.Message{Data: []byte("hello, psiface")})
+
 	topicID := os.Getenv("PSIFACE_TOPIC")
 	if topicID == "" {
 		t.Skip("missing PSIFACE_TOPIC environment variable")
@@ -42,16 +44,18 @@ func TestIntegration(t *testing.T) {
 	}
 
 	subscriptionName := fmt.Sprintf("psiface_test_%d", time.Now().UnixNano())
+
 	ctx := context.Background()
 	c, err := pubsub.NewClient(ctx, projID)
 	if err != nil {
 		t.Fatal(err)
 	}
 	client := AdaptClient(c)
-	basicTests(t, topicName, subscriptionName, client)
+
+	basicTests(t, msg, topicName, subscriptionName, client)
 }
 
-func basicTests(t *testing.T, topicName string, subscriptionName string, client Client) {
+func basicTests(t *testing.T, msg Message, topicName string, subscriptionName string, client Client) {
 	ctx := context.Background()
 	topic := client.Topic(topicName)
 
@@ -60,12 +64,12 @@ func basicTests(t *testing.T, topicName string, subscriptionName string, client 
 		t.Fatal(err)
 	}
 
-	const contents = "hello, psiface"
+	contents := string(msg.Data())
 	ctx, cancel := context.WithCancel(ctx)
 	errs := make(chan error, 50)
 	go func() {
-		err = sub.Receive(ctx, func(ctx context.Context, msg *pubsub.Message) {
-			got, want := string(msg.Data), contents
+		err = sub.Receive(ctx, func(ctx context.Context, msg Message) {
+			got, want := string(msg.Data()), contents
 			msg.Ack()
 			if got == want {
 				errs <- nil
@@ -77,7 +81,7 @@ func basicTests(t *testing.T, topicName string, subscriptionName string, client 
 		}
 	}()
 
-	_, err = topic.Publish(ctx, &pubsub.Message{Data: []byte(contents)}).Get(ctx)
+	_, err = topic.Publish(ctx, msg).Get(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -105,11 +109,12 @@ func parseTopic(topicID string) (project, topic string, err error) {
 // the pubsub client.
 func TestFake(t *testing.T) {
 	ctx := context.Background()
+	msg := newFakeMessage("my-msg", []byte("hello, psiface"), nil, time.Now())
 	client := newFakeClient()
 	if _, err := client.CreateTopic(ctx, "my-topic"); err != nil {
 		t.Fatal(err)
 	}
-	basicTests(t, "my-topic", "my-subscription", client)
+	basicTests(t, msg, "my-topic", "my-subscription", client)
 }
 
 type fakeClient struct {
@@ -147,7 +152,7 @@ func (c *fakeClient) CreateSubscription(ctx context.Context, id string, cfg Subs
 		c:       c,
 		name:    id,
 		topicID: cfg.Topic.String(),
-		msgs:    make(chan *pubsub.Message, 50),
+		msgs:    make(chan Message, 50),
 	}
 	c.subs.Store(id, s)
 	t := cfg.Topic.(*fakeTopic)
@@ -174,7 +179,7 @@ func (t *fakeTopic) String() string {
 	return t.name
 }
 
-func (t *fakeTopic) Publish(ctx context.Context, msg *pubsub.Message) PublishResult {
+func (t *fakeTopic) Publish(ctx context.Context, msg Message) PublishResult {
 	for _, sub := range t.subs {
 		if sub.topicID == t.name {
 			sub.msgs <- msg
@@ -188,7 +193,7 @@ type fakeSubscription struct {
 	c       *fakeClient
 	name    string
 	topicID string
-	msgs    chan *pubsub.Message
+	msgs    chan Message
 }
 
 func (s *fakeSubscription) Exists(_ context.Context) (bool, error) {
@@ -196,7 +201,7 @@ func (s *fakeSubscription) Exists(_ context.Context) (bool, error) {
 	return ok, nil
 }
 
-func (s *fakeSubscription) Receive(ctx context.Context, f func(context.Context, *pubsub.Message)) error {
+func (s *fakeSubscription) Receive(ctx context.Context, f func(context.Context, Message)) error {
 	for {
 		select {
 		case <-ctx.Done():
@@ -214,6 +219,43 @@ func (s *fakeSubscription) Delete(_ context.Context) error {
 	s.c.subs.Delete(s.name)
 	return nil
 }
+
+type fakeMessage struct {
+	Message
+	id          string
+	data        []byte
+	attributes  map[string]string
+	publishTime time.Time
+}
+
+func newFakeMessage(id string, data []byte, attributes map[string]string, publishTime time.Time) *fakeMessage {
+	return &fakeMessage{
+		id:          id,
+		data:        data,
+		attributes:  attributes,
+		publishTime: publishTime,
+	}
+}
+
+func (m *fakeMessage) ID() string {
+	return m.id
+}
+
+func (m *fakeMessage) Data() []byte {
+	return m.data
+}
+
+func (m *fakeMessage) Attributes() map[string]string {
+	return m.attributes
+}
+
+func (m *fakeMessage) PublishTime() time.Time {
+	return m.publishTime
+}
+
+func (m *fakeMessage) Ack() {}
+
+func (m *fakeMessage) Nack() {}
 
 type fakePublishResult struct {
 	PublishResult
