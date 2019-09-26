@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# Fail on any error
-set -eo pipefail
-
 # Display commands being run
 set -x
 
@@ -27,7 +24,7 @@ git diff go.sum | tee /dev/stderr | (! read)
 pwd
 
 # Look at all .go files (ignoring .pb.go files) and make sure they have a Copyright. Fail if any don't.
-git ls-files "*[^.pb].go" | xargs grep -L "\(Copyright [0-9]\{4,\}\)" 2>&1 | tee /dev/stderr | (! read)
+find . -type f -name "*.go" ! -name "*.pb.go" -exec grep -L "\(Copyright [0-9]\{4,\}\)" {} \; 2>&1 | tee /dev/stderr | (! read)
 gofmt -s -d -l . 2>&1 | tee /dev/stderr | (! read)
 goimports -l . 2>&1 | tee /dev/stderr | (! read)
 
