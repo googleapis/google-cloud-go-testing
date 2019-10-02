@@ -1,5 +1,7 @@
 module github.com/googleapis/google-cloud-go-testing
 
+go 1.11
+
 require (
 	cloud.google.com/go v0.44.3
 	cloud.google.com/go/bigquery v1.0.1
@@ -9,5 +11,3 @@ require (
 	google.golang.org/api v0.9.0
 	honnef.co/go/tools v0.0.0-20190418001031-e561f6794a2a
 )
-
-go 1.13
