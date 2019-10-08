@@ -68,7 +68,7 @@ func basicTests(t *testing.T, msg Message, topicName string, subscriptionName st
 	ctx, cancel := context.WithCancel(ctx)
 	errs := make(chan error, 50)
 	go func() {
-		err = sub.Receive(ctx, func(ctx context.Context, msg Message) {
+		err := sub.Receive(ctx, func(ctx context.Context, msg Message) {
 			got, want := string(msg.Data()), contents
 			msg.Ack()
 			if got == want {
