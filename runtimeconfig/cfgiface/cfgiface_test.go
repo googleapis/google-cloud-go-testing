@@ -80,11 +80,15 @@ func basicTests(t *testing.T, configName string, service Service) {
 		t.Fatal("variable not returned in list")
 	}
 
+	changes := make(chan *runtimeconfig.Variable, 1)
 	errs := make(chan error, 1)
 
 	go func() {
-		variable, err = op.Watch(variable.Name, &runtimeconfig.WatchVariableRequest{}).Do()
-		errs <- err
+		if change, err := op.Watch(variable.Name, &runtimeconfig.WatchVariableRequest{}).Do(); err != nil {
+			errs <- err
+		} else {
+			changes <- change
+		}
 	}()
 
 	variable.Text = "hello again, cfgiface"
@@ -93,8 +97,11 @@ func basicTests(t *testing.T, configName string, service Service) {
 		t.Fatal(err)
 	}
 
-	if errs <- err; err != nil {
+	select {
+	case err := <-errs:
 		t.Fatal(err)
+	case change := <-changes:
+		variable = change
 	}
 
 	if got, want := variable.State, "UPDATED"; got != want {
@@ -254,7 +261,7 @@ func (u *fakeProjectsConfigsVariablesUpdateCall) Do(opts ...googleapi.CallOption
 }
 
 func (v *fakeProjectsConfigsVariablesService) Watch(name string, watchvariablerequest *runtimeconfig.WatchVariableRequest) ProjectsConfigsVariablesWatchCall {
-	return &fakeProjectsConfigsVariablesWatchCall{svc: v}
+	return &fakeProjectsConfigsVariablesWatchCall{name: name, svc: v}
 }
 
 type fakeProjectsConfigsVariablesWatchCall struct {
