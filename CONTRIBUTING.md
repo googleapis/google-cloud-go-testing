@@ -29,7 +29,13 @@ Guidelines](https://opensource.google.com/conduct/).
 
 ## Testing
 
-### storage/psiface
+### runtimeconfig/cfgiface
+
+Before running the tests, set the CFGIFACE_CONFIG environment variable to the
+name of a runtime configuration for which you have permissions to create, update
+and delete variables.
+
+### pubsub/psiface
 
 Before running the tests, set the PSIFACE_TOPIC environment variable to the
 name of a topic for which you have publish permissions and the ability to
