@@ -1,5 +1,15 @@
 # Testing Support for the Google Cloud Client Libraries for Go
 
+## Status
+
+This project is no longer being maintained. If you would like to see patternes you can use
+to test against the Go client libraries please see the links below:
+
+- [Test cloud.google.com/go clients](https://github.com/googleapis/google-cloud-go/blob/master/testing.md).
+- [Test google.golang.org/api clients](https://github.com/googleapis/google-api-go-client/blob/master/testing.md).
+
+## Install
+
 ```
 go get github.com/googleapis/google-cloud-go-testing
 ```
